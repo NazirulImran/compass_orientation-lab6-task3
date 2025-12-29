@@ -12,16 +12,16 @@ import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
-    // Sensor Manager and Sensors
-    private lateinit var sensorManager: SensorManager
+    // Sensor Manager and Sensors (accelerometer and magnetometer)
+    private lateinit var sensorManager: SensorManager //access all hardware
     private var accelerometer: Sensor? = null
     private var magnetometer: Sensor? = null
 
     // UI Elements
-    private lateinit var compassArrow: ImageView
+    private lateinit var compassArrow: ImageView //get from drawable
     private lateinit var headingText: TextView
 
-    // Step 2: Set Up Sensor Arrays [cite: 157-161]
+    // Step 2: Set Up Sensor Arrays
     // These hold the latest raw data from the hardware
     private var gravity = FloatArray(3)
     private var geomagnetic = FloatArray(3)
@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
     }
 
-    // Step 5 (Lifecycle): Register Two Listeners [cite: 162-164]
+    // Step 5 (Lifecycle): Register Two Listeners
     override fun onResume() {
         super.onResume()
         accelerometer?.let {
@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     override fun onSensorChanged(event: SensorEvent?) {
         if (event == null) return
 
-        // 1. Update Data Arrays based on sensor type [cite: 167-170]
+        // 1. Update Data Arrays based on sensor type
         if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
             System.arraycopy(event.values, 0, gravity, 0, gravity.size)
             hasGravity = true
@@ -81,26 +81,26 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         // Only calculate if we have data from BOTH sensors
         if (hasGravity && hasGeomagnetic) {
 
-            // 2. Compute Rotation Matrix [cite: 172]
+            // 2. Compute Rotation Matrix
             // This fills 'rMat' with the math needed to translate sensor data to world coordinates
             val success = SensorManager.getRotationMatrix(rMat, iMat, gravity, geomagnetic)
 
             if (success) {
-                // 3. Get Orientation [cite: 173-174]
+                // 3. Get Orientation
                 // orientation[0] = Azimuth (Z-axis direction)
                 SensorManager.getOrientation(rMat, orientation)
 
-                // Step 4: Convert and Rotate [cite: 177]
+                // Step 4: Convert and Rotate
                 val azimuthInRadians = orientation[0]
 
-                // 1. Convert to Degrees [cite: 179]
+                // 1. Convert to Degrees
                 var azimuthInDegrees = Math.toDegrees(azimuthInRadians.toDouble()).toFloat()
 
-                // 2. Normalize (0 to 360) [cite: 180]
+                // 2. Normalize (0 to 360)
                 // The raw result can be negative (e.g., -90 for West). This fixes it.
                 azimuthInDegrees = (azimuthInDegrees + 360) % 360
 
-                // 3. Update the Arrow (Animation) [cite: 183]
+                // 3. Update the Arrow (Animation)
                 // We use negative degrees because the phone rotates one way,
                 // but the arrow must rotate the opposite way to stay pointing North.
                 compassArrow.rotation = -azimuthInDegrees
@@ -112,6 +112,5 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        // Not needed for this lab
     }
 }
